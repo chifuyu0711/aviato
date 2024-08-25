@@ -2,13 +2,26 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 from taggit.managers import TaggableManager
+from django.template.defaultfilters import slugify
 
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, unique=False, blank=True, null=True)  # Изменения здесь
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            original_slug = slugify(self.name)
+            slug = original_slug
+            count = 1
+            while Category.objects.filter(slug=slug).exists():
+                slug = f"{original_slug}-{count}"
+                count += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
 
 class Post(models.Model):
@@ -51,3 +64,12 @@ class Image(models.Model):
         return f"Image for post: {self.post.title}"
 
 
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    email = models.EmailField(default='default@example.com')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.post.title}"
