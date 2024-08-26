@@ -136,7 +136,7 @@
                     <ul class="nav navbar-nav">
                         <!-- Menu items will be defined in child templates -->
                         {% block menu_items %}
-                        <li class="dropdown"><a href="">Home</a></li>
+                        <li class="dropdown"><a href="{% url 'index' %}">Home</a></li>
                         <li class="dropdown dropdown-slide"><a href="">Shop</a></li>
                         <li class="dropdown full-width dropdown-slide"><a href="#!">Pages</a></li>
                         <li class="dropdown dropdown-slide"><a href="">Blog</a></li>
@@ -157,7 +157,7 @@
                     <div class="content">
                         <h1 class="page-name">Page Title</h1>
                         <ol class="breadcrumb">
-                            <li><a href="">Home</a></li>
+                            <li><a href="{% url 'index' %}">Home</a></li>
                             <li class="active">Page</li>
                         </ol>
                     </div>

@@ -4,6 +4,15 @@ from django.contrib.auth.models import User
 from .models import Comment
 
 
+
+class SharePostForm(forms.Form):
+    post_id = forms.IntegerField(widget=forms.HiddenInput)
+    email = forms.EmailField(widget=forms.EmailInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Enter recipient email',
+        'required': True
+    }))
+
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment

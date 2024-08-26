@@ -1,13 +1,38 @@
-from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.generic import ListView, DetailView
-from .forms import LoginForm, SignupForm, CommentForm
+from config import settings
+from .forms import LoginForm, SignupForm, CommentForm, SharePostForm
 from .models import Post, Image, Category
 from taggit.models import Tag
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, views
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
+
+def share_post(request):
+    if request.method == 'POST':
+        form = SharePostForm(request.POST)
+        if form.is_valid():
+            post_id = form.cleaned_data['post_id']
+            recipient_email = form.cleaned_data['email']
+            post = get_object_or_404(Post, id=post_id)
+
+            subject = f"Пост: {post.title}"
+            message = (
+                f"Заголовок: {post.title}\n"
+                f"Дата: {post.date}\n"
+                f"Автор: {post.user}\n"
+                f"Содержание:\n{post.body}\n\n"
+                f"Изображение: {request.build_absolute_uri(post.images.all().first().image.url) if post.images.exists() else 'Изображение отсутствует'}"
+            )
+
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient_email])
+
+            messages.success(request, "Пост был успешно отправлен по электронной почте.")
+            return redirect('post_detail', pk=post_id)
+
+    return redirect('index')
 
 
 class IndexView(LoginRequiredMixin, ListView):
@@ -24,7 +49,6 @@ class IndexView(LoginRequiredMixin, ListView):
 
         context['latest_posts'] = Post.objects.order_by('-date')[:3]
 
-
         return context
 
 
@@ -32,7 +56,6 @@ class PostDetailView(DetailView):
     model = Post
     template_name = 'blog-post-detail.html'
     context_object_name = 'post'
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -95,18 +118,6 @@ class CategoryPostListView(ListView):
         context['tags'] = Tag.objects.all()
         context['categories'] = Category.objects.all()
         return context
-
-
-class PasswordChangeView(views.PasswordChangeView):
-    success_url = reverse_lazy("accounts:password_change_done")
-
-
-class PasswordResetView(views.PasswordResetView):
-    success_url = reverse_lazy("accounts:password_reset_done")
-
-
-class PasswordResetConfirmView(views.PasswordResetConfirmView):
-    success_url = reverse_lazy("accounts:password_reset_complete")
 
 
 def user_signup(request):

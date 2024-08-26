@@ -13,7 +13,7 @@ Blog - Aviato
         <div class="content">
           <h1 class="page-name">Blog</h1>
           <ol class="breadcrumb">
-            <li><a href="">Home</a></li>
+            <li><a href="{% url 'index' %}">Home</a></li>
             <li class="active">Blog</li>
           </ol>
         </div>
@@ -28,7 +28,7 @@ Blog - Aviato
  <div class="post">
     {% for post in posts %}
         <div class="post-media post-thumb">
-            <a href="blog-single.html">
+            <a href="{% url 'post_detail' post.pk %}">
                 {% if post.images.all %}
                 <img src="{{ post.images.all.0.image.url }}" alt="{{ post.title }}" style="width:50%; object-fit: cover;">
                 {% endif %}
@@ -49,13 +49,13 @@ Blog - Aviato
                     {% endfor %}
                 </li>
                 <li>
-                    <a href="#!"><i class="tf-ion-chatbubbles"></i> 4 COMMENTS</a>
+                    <a href="{% url 'post_detail' post.pk %}"><i class="tf-ion-chatbubbles"></i> {{ post.comments.count }}</a>
                 </li>
             </ul>
         </div>
         <div class="post-content">
             <p>{{ post.body|truncatechars:80 }}</p>
-            <a href="blog-single.html" class="btn btn-main">Continue Reading</a>
+            <a href="{% url 'post_detail' post.pk %}" class="btn btn-main">Continue Reading</a>
         </div>
     {% endfor %}
 </div>
